@@ -41,7 +41,7 @@ export default function ParentPayPage() {
                 .maybeSingle();
 
             if (error || !data) throw new Error("Élève non trouvé. Vérifiez le matricule.");
-            setStudent(data);
+            setStudent(data as any);
             setSelectedMethod(null);
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : "Erreur lors de la recherche.";
