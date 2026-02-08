@@ -75,6 +75,7 @@ export default function TransactionNotification() {
                 .select(`
                     id,
                     amount,
+                    created_at,
                     momo_reference,
                     students (
                         first_name,
