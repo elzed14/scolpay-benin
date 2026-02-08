@@ -103,7 +103,7 @@ export default function FinancialOverview({ metrics, chartData, topDebtors = [] 
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <BarChart data={chartData ?? []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                                 <XAxis
                                     dataKey="name"
@@ -121,11 +121,11 @@ export default function FinancialOverview({ metrics, chartData, topDebtors = [] 
                                 <Tooltip
                                     cursor={{ fill: '#f3f4f6' }}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    formatter={(value: any) => [`${(value || 0).toLocaleString()} FCFA`, 'Montant']}
+                                    formatter={(value: number | string | undefined) => [`${Number(value || 0).toLocaleString()} FCFA`, 'Montant']}
                                 />
                                 <Bar dataKey="amount" radius={[6, 6, 0, 0]} maxBarSize={50}>
-                                    {chartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#2563eb' : '#9ca3af'} />
+                                    {(chartData ?? []).map((entry, index, array) => (
+                                        <Cell key={`cell-${index}`} fill={index === array.length - 1 ? '#2563eb' : '#9ca3af'} />
                                     ))}
                                 </Bar>
                             </BarChart>
