@@ -1,0 +1,122 @@
+﻿
+> scolpay@0.1.0 build
+> next build
+
+node.exe : ÔÜá 
+Warning: Next.js 
+inferred your 
+workspace root, but 
+it may not be 
+correct.
+Au caractère 
+C:\Program Files\node
+js\npm.ps1:29 : 3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (Ô    
+Üá Warning: Ne...not 
+    be 
+correct.:String) [   
+ ], RemoteException
+    + 
+FullyQualifiedError  
+  Id : 
+NativeCommandErr    
+or
+ 
+ We detected 
+multiple lockfiles 
+and selected the 
+directory of C:\Users
+\HP\Desktop\package-l
+ock.json as the root 
+directory.
+ To silence this 
+warning, set 
+`turbopack.root` in 
+your Next.js config, 
+or consider removing 
+one of the lockfiles 
+if it's not needed.
+   See https://nextjs
+.org/docs/app/api-ref
+erence/config/next-co
+nfig-js/turbopack#roo
+t-directory for more 
+information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\HP\Desk
+top\APPFINTECH\packag
+e-lock.json
+
+Ôû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local
+
+ÔÜá The "middleware" 
+file convention is 
+deprecated. Please 
+use "proxy" instead. 
+Learn more: https://n
+extjs.org/docs/messag
+es/middleware-to-prox
+y
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 9.6s
+  Running TypeScript ...
+Failed to compile.
+
+.next/dev/types/valid
+ator.ts:80:39
+Type error: Cannot 
+find module '../../..
+/src/app/debug/page.j
+s' or its 
+corresponding type 
+declarations.
+
+[0m [90m 78 |[39m 
+{
+ [90m 79 |[39m   
+type __IsExpected[33
+m<[39m[33mSpecific
+[39m 
+[36mextends[39m [3
+3mAppPageConfig[39m
+[33m<[39m[32m"/debu
+g"[39m[33m>>[39m 
+[33m=[39m 
+[33mSpecific[39m
+[31m[1m>[22m[39m
+[90m 80 |[39m   
+[36mconst[39m 
+handler [33m=[39m 
+{} [36mas[39m 
+[36mtypeof[39m [36
+mimport[39m([32m"..
+/../../src/app/debug/
+page.js"[39m)
+ [90m    |[39m     
+                     
+             
+[31m[1m^[22m[39m
+ [90m 81 |[39m   
+type __Check 
+[33m=[39m __IsExpec
+ted[33m<[39m[36mty
+peof[39m 
+handler[33m>[39m
+ [90m 82 |[39m   
+[90m// 
+@ts-ignore[39m
+ [90m 83 |[39m   
+type __Unused 
+[33m=[39m 
+__Check[0m
+Next.js build worker 
+exited with code: 1 
+and signal: null
