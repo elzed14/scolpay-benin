@@ -121,7 +121,7 @@ export default function FinancialOverview({ metrics, chartData, topDebtors = [] 
                                 <Tooltip
                                     cursor={{ fill: '#f3f4f6' }}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    formatter={(value: number) => [`${value.toLocaleString()} FCFA`, 'Montant']}
+                                    formatter={(value: number) => [`${value.toLocaleString()} FCFA`, 'Montant'] as any}
                                 />
                                 <Bar dataKey="amount" radius={[6, 6, 0, 0]} maxBarSize={50}>
                                     {chartData.map((entry, index) => (
