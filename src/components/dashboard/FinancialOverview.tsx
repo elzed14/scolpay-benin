@@ -17,8 +17,12 @@ interface FinancialOverviewProps {
         id: string;
         first_name: string;
         last_name: string;
-        class_name: string; // Correction: class_name is direct on student now? Yes per SQL fix
+        class_name: string;
         total_fee_due: number;
+    }>;
+    chartData?: Array<{
+        name: string;
+        amount: number;
     }>;
 }
 
