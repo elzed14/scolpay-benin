@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import OfflineStatus from "@/components/pwa/OfflineStatus";
 
 const menuItems = {
     school: [
@@ -114,6 +115,7 @@ export default function DashboardLayout({
                         <Menu className="h-5 w-5 text-gray-500" />
                     </Button>
                     <div className="flex items-center gap-4">
+                        <OfflineStatus />
                         <div className="text-right">
                             <p className="text-sm font-bold text-gray-900 uppercase">{role === "school" ? "École" : "Admin"}</p>
                             <p className="text-[10px] text-gray-400 font-medium">Connecté</p>
