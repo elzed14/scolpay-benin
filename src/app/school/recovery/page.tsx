@@ -49,19 +49,27 @@ export default function RecoveryPage() {
         fetchDebtors();
     }, [fetchDebtors]);
 
-    const handleSendReminder = (student: Student, type: "sms" | "whatsapp") => {
-        const message = `Bonjour, sauf erreur de notre part, le solde de scolarité de ${student.first_name} ${student.last_name} (${student.matricule}) est de ${student.total_fee_due.toLocaleString()} FCFA. Merci de régulariser au plus vite.`;
+    const handleSendReminder = async (student: Student, type: "sms" | "whatsapp") => {
+        setLoading(true); // Petit effet de chargement local si désiré, ou gérer un état spécifique
+        try {
+            const response = await fetch("/api/whatsapp/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    type: "single",
+                    data: { studentId: student.id }
+                })
+            });
 
-        if (type === "whatsapp") {
-            // Simulation lien WhatsApp (nécessiterait le numéro de téléphone parent en DB)
-            // Format: https://wa.me/[NUMBER]?text=[MESSAGE]
-            const encodedMsg = encodeURIComponent(message);
-            window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
-            toast.success("WhatsApp ouvert !");
-        } else {
-            // Simulation SMS (nécessiterait API SMS)
-            console.log("SMS Sent:", message);
-            toast.success("Rappel marqué comme envoyé !");
+            const result = await response.json();
+
+            if (!response.ok) throw new Error(result.error || "Erreur d'envoi");
+
+            toast.success(`Rappel ${type === "whatsapp" ? "WhatsApp" : "SMS"} envoyé (Simulation) !`);
+        } catch (error: any) {
+            toast.error(error.message || "Erreur lors de l'envoi du rappel");
+        } finally {
+            setLoading(false);
         }
     };
 
