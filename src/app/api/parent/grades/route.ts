@@ -34,7 +34,7 @@ export async function GET() {
                     type,
                     weight,
                     subjects (name, code),
-                    terms (name)
+                    terms (name, id)
                 `)
                 .eq("student_id", student.id)
                 .order("created_at", { ascending: false });

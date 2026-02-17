@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, GraduationCap, BookOpen, Calendar } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
+import { Loader2, GraduationCap, BookOpen, Calendar, Download } from "lucide-react";
+import { toast } from "sonner";
 
 interface Grade {
     id: string;
@@ -13,7 +13,7 @@ interface Grade {
     type: string;
     weight: number;
     subjects: { name: string; code: string };
-    terms: { name: string };
+    terms: { name: string; id: string };
     created_at: string;
 }
 
@@ -64,6 +64,31 @@ export default function ParentAcademicPage() {
         });
 
         return grouped;
+    };
+
+    const downloadBulletin = async (studentId: string, termId: string, studentName: string, termName: string) => {
+        try {
+            const response = await fetch(`/api/parent/bulletins/${studentId}/${termId}`);
+
+            if (!response.ok) {
+                throw new Error("Erreur lors de la génération du bulletin");
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bulletin_${studentName}_${termName}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            toast.success("Bulletin téléchargé avec succès !");
+        } catch (error) {
+            console.error("Error downloading bulletin:", error);
+            toast.error("Erreur lors du téléchargement du bulletin");
+        }
     };
 
     if (loading) {
@@ -123,43 +148,66 @@ export default function ParentAcademicPage() {
                                 <p className="text-sm text-gray-500 italic">Aucune note enregistrée pour le moment.</p>
                             ) : (
                                 <div className="space-y-8">
-                                    {Object.entries(grouped).map(([term, subjects]) => (
-                                        <div key={term} className="space-y-4">
-                                            <h3 className="flex items-center gap-2 font-semibold text-lg text-blue-900 border-b pb-2">
-                                                <Calendar className="h-4 w-4" />
-                                                {term}
-                                            </h3>
+                                    {Object.entries(grouped).map(([term, subjects]) => {
+                                        // Get term ID from first grade
+                                        const firstGrade = Object.values(subjects)[0]?.[0];
+                                        const termId = firstGrade?.terms?.id;
 
-                                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                                {Object.entries(subjects).map(([subject, grades]) => (
-                                                    <div key={subject} className="bg-white border rounded-lg p-3 shadow-sm">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <BookOpen className="h-4 w-4 text-purple-500" />
-                                                            <span className="font-medium text-gray-800 line-clamp-1">{subject}</span>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {grades.map(grade => (
-                                                                <div key={grade.id} className="relative group">
-                                                                    <span className={`
-                                                                        px-2 py-1 rounded text-sm font-mono font-bold border
-                                                                        ${grade.value < 10 ? 'bg-red-50 text-red-700 border-red-100' :
-                                                                            grade.value >= 16 ? 'bg-green-50 text-green-700 border-green-100' :
-                                                                                'bg-gray-50 text-gray-700 border-gray-100'}
-                                                                    `}>
-                                                                        {grade.value}
-                                                                    </span>
-                                                                    {/* Tooltip simple */}
-                                                                    <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                                                                        {grade.type} {grade.weight > 1 ? `(Coeff ${grade.weight})` : ''}
+                                        return (
+                                            <div key={term} className="space-y-4">
+                                                <div className="flex items-center justify-between border-b pb-2">
+                                                    <h3 className="flex items-center gap-2 font-semibold text-lg text-blue-900">
+                                                        <Calendar className="h-4 w-4" />
+                                                        {term}
+                                                    </h3>
+                                                    {termId && (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => downloadBulletin(
+                                                                result.student.id,
+                                                                termId,
+                                                                `${result.student.first_name}_${result.student.last_name}`,
+                                                                term
+                                                            )}
+                                                            className="gap-2"
+                                                        >
+                                                            <Download className="h-4 w-4" />
+                                                            Télécharger Bulletin
+                                                        </Button>
+                                                    )}
+                                                </div>
+
+                                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                                    {Object.entries(subjects).map(([subject, grades]) => (
+                                                        <div key={subject} className="bg-white border rounded-lg p-3 shadow-sm">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <BookOpen className="h-4 w-4 text-purple-500" />
+                                                                <span className="font-medium text-gray-800 line-clamp-1">{subject}</span>
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {grades.map(grade => (
+                                                                    <div key={grade.id} className="relative group">
+                                                                        <span className={`
+                                                                            px-2 py-1 rounded text-sm font-mono font-bold border
+                                                                            ${grade.value < 10 ? 'bg-red-50 text-red-700 border-red-100' :
+                                                                                grade.value >= 16 ? 'bg-green-50 text-green-700 border-green-100' :
+                                                                                    'bg-gray-50 text-gray-700 border-gray-100'}
+                                                                        `}>
+                                                                            {grade.value}
+                                                                        </span>
+                                                                        {/* Tooltip simple */}
+                                                                        <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                                                                            {grade.type} {grade.weight > 1 ? `(Coeff ${grade.weight})` : ''}
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            ))}
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </CardContent>
