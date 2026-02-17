@@ -19,6 +19,7 @@ export default function Navbar({ role = "visitor" }: NavbarProps) {
                 {role === "parent" ? (
                     <>
                         <Link href="/parent" className="text-sm font-medium hover:text-blue-600 transition-colors">Payer</Link>
+                        <Link href="/parent/academic" className="text-sm font-medium hover:text-blue-600 transition-colors">Bulletins</Link>
                         <Link href="/parent/announcements" className="text-sm font-medium hover:text-blue-600 transition-colors">Actualités</Link>
                     </>
                 ) : (

@@ -25,6 +25,7 @@ const menuItems = {
     school: [
         { title: "Tableau de bord", icon: LayoutDashboard, href: "/school" },
         { title: "Élèves", icon: Users, href: "/school/students" },
+        { title: "Académique", icon: GraduationCap, href: "/school/academic" },
         { title: "Paiements", icon: CreditCard, href: "/school/transactions" },
         { title: "Communication", icon: Bell, href: "/school/communication" },
         { title: "Tranches & Frais", icon: Settings, href: "/school/fees" },
