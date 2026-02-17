@@ -16,10 +16,19 @@ export default function Navbar({ role = "visitor" }: NavbarProps) {
                 {role === "parent" && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-medium">Parents</span>}
             </Link>
             <nav className="ml-auto flex items-center gap-4 sm:gap-6">
-                <Link href="/#features" className="text-sm font-medium hover:text-blue-600 transition-colors hidden sm:block">Fonctionnalités</Link>
-                <Link href="/parent" className="text-sm font-medium hover:text-blue-600 transition-colors">Payer</Link>
-                <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors border px-4 py-1.5 rounded-full">Connexion</Link>
-                <Link href="/register" className="text-sm font-medium bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition-all shadow-sm">École</Link>
+                {role === "parent" ? (
+                    <>
+                        <Link href="/parent" className="text-sm font-medium hover:text-blue-600 transition-colors">Payer</Link>
+                        <Link href="/parent/announcements" className="text-sm font-medium hover:text-blue-600 transition-colors">Actualités</Link>
+                    </>
+                ) : (
+                    <>
+                        <Link href="/#features" className="text-sm font-medium hover:text-blue-600 transition-colors hidden sm:block">Fonctionnalités</Link>
+                        <Link href="/parent" className="text-sm font-medium hover:text-blue-600 transition-colors">Payer</Link>
+                        <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors border px-4 py-1.5 rounded-full">Connexion</Link>
+                        <Link href="/register" className="text-sm font-medium bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition-all shadow-sm">École</Link>
+                    </>
+                )}
             </nav>
         </header>
     );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     GraduationCap,
     LayoutDashboard,
@@ -9,7 +9,8 @@ import {
     Settings,
     LogOut,
     Menu,
-    AlertTriangle
+    AlertTriangle,
+    Bell
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +26,7 @@ const menuItems = {
         { title: "Tableau de bord", icon: LayoutDashboard, href: "/school" },
         { title: "Élèves", icon: Users, href: "/school/students" },
         { title: "Paiements", icon: CreditCard, href: "/school/transactions" },
+        { title: "Communication", icon: Bell, href: "/school/communication" },
         { title: "Tranches & Frais", icon: Settings, href: "/school/fees" },
         { title: "Mon Abonnement", icon: CreditCard, href: "/school/subscription" },
         { title: "Paramètres", icon: Settings, href: "/school/settings" },
@@ -48,7 +50,7 @@ export default function DashboardLayout({
     const router = useRouter();
     const supabase = createClient();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const { status, isRestricted } = useSubscription();
+    const { isRestricted } = useSubscription();
 
     const handleLogout = async () => {
         await supabase.auth.signOut();

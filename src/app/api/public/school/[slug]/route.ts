@@ -1,5 +1,4 @@
-import { createClient } from "@/lib/supabase/client"; // Note: Client car public, mais dans Route Handler on peut utiliser createClient (server) sans cookies auth si on utilise anon key sur tables publiques, ou service role.
-// Mieux: utiliser createClient du server sans auth user context pour lire des données publiques.
+// import { createClient } from "@/lib/supabase/client"; // Removed unused
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
