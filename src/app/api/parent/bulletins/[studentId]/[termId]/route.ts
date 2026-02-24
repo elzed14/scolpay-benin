@@ -11,7 +11,7 @@ import {
 
 export async function GET(
     request: Request,
-    { params }: { params: { studentId: string; termId: string } }
+    { params }: { params: Promise<{ studentId: string; termId: string }> }
 ) {
     try {
         const supabase = await createClient();
@@ -21,7 +21,7 @@ export async function GET(
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-        const { studentId, termId } = params;
+        const { studentId, termId } = await params;
 
         // 1. Verify parent has access to this student
         const { data: student, error: studentError } = await supabase
@@ -79,13 +79,18 @@ export async function GET(
         // 5. Group grades by subject and calculate averages
         const subjectMap = new Map();
 
-        grades?.forEach(grade => {
-            const subjectId = grade.subjects.id;
+        grades?.forEach((grade: any) => {
+            const subject = Array.isArray(grade.subjects) ? grade.subjects[0] : grade.subjects;
+            const classSubject = Array.isArray(grade.class_subjects) ? grade.class_subjects[0] : grade.class_subjects;
+
+            if (!subject) return;
+
+            const subjectId = subject.id;
             if (!subjectMap.has(subjectId)) {
                 subjectMap.set(subjectId, {
-                    name: grade.subjects.name,
-                    code: grade.subjects.code,
-                    coefficient: grade.class_subjects.coefficient,
+                    name: subject.name,
+                    code: subject.code,
+                    coefficient: classSubject?.coefficient || 1,
                     grades: []
                 });
             }
@@ -151,28 +156,34 @@ export async function GET(
         if (generalAverage !== null && classGrades && classGrades.length > 0) {
             // Group by student and calculate their averages
             const studentGradeMap = new Map();
-            classGrades.forEach(g => {
+            classGrades.forEach((g: any) => {
                 if (!studentGradeMap.has(g.student_id)) {
                     studentGradeMap.set(g.student_id, new Map());
                 }
-                const subjectId = g.subjects.id;
+                const subject = Array.isArray(g.subjects) ? g.subjects[0] : g.subjects;
+                const classSubject = Array.isArray(g.class_subjects) ? g.class_subjects[0] : g.class_subjects;
+
+                if (!subject) return;
+
+                const subjectId = subject.id;
                 if (!studentGradeMap.get(g.student_id).has(subjectId)) {
                     studentGradeMap.get(g.student_id).set(subjectId, {
                         grades: [],
-                        coefficient: g.class_subjects.coefficient
+                        coefficient: classSubject?.coefficient || 1
                     });
                 }
                 studentGradeMap.get(g.student_id).get(subjectId).grades.push({
                     value: g.value,
-                    weight: g.weight
+                    weight: g.weight,
+                    type: g.type
                 });
             });
 
             const allAverages: number[] = [];
             studentGradeMap.forEach((subjects) => {
                 const subjectAvgs: Array<{ average: number | null; coefficient: number }> = [];
-                subjects.forEach((data: { grades: Array<{ value: number; weight: number }>; coefficient: number }) => {
-                    const avg = calculateSubjectAverage(data.grades);
+                subjects.forEach((data: { grades: Array<{ value: number; weight: number; type: string }>; coefficient: number }) => {
+                    const avg = calculateSubjectAverage(data.grades as any);
                     if (avg !== null) {
                         subjectAvgs.push({ average: avg, coefficient: data.coefficient });
                     }
@@ -206,12 +217,12 @@ export async function GET(
             rank,
             totalStudents,
             appreciation
-        });
+        }) as any;
 
         const pdfBuffer = await renderToBuffer(pdfDoc);
 
         // 8. Return PDF
-        return new NextResponse(pdfBuffer, {
+        return new NextResponse(pdfBuffer as any, {
             headers: {
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': `attachment; filename="bulletin_${student.matricule}_${term.name}.pdf"`

@@ -9,12 +9,14 @@ import {
     Phone,
     Mail,
     Globe,
-    Users,
-    Star,
     Shield,
-    Clock,
+    Star,
+    CheckCircle,
     ChevronRight,
-    CheckCircle
+    Search,
+    Megaphone,
+    Download,
+    FileText
 } from "lucide-react";
 import Link from "next/link";
 
@@ -39,6 +41,12 @@ interface SchoolData {
         averageRating: number | null;
         reviewCount: number;
     };
+    fees: Array<{
+        id: string;
+        name: string;
+        amount: number;
+        class_name: string;
+    }>;
     reviews: Array<{
         rating: number;
         comment: string;
@@ -47,23 +55,40 @@ interface SchoolData {
     }>;
 }
 
+interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    attachment_url?: string;
+    created_at: string;
+}
+
 export default function PublicSchoolPage() {
     const params = useParams();
     const slug = params.slug as string;
 
     const [school, setSchool] = useState<SchoolData | null>(null);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchSchool = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch(`/api/public/school/${slug}`);
-                if (!response.ok) {
-                    throw new Error("École non trouvée");
+                const [schoolRes, annRes] = await Promise.all([
+                    fetch(`/api/public/school/${slug}`),
+                    fetch(`/api/public/school/announcements/${slug}`)
+                ]);
+
+                if (!schoolRes.ok) throw new Error("École non trouvée");
+
+                const schoolData = await schoolRes.json();
+                setSchool(schoolData.school);
+
+                if (annRes.ok) {
+                    const annData = await annRes.json();
+                    setAnnouncements(annData.announcements || []);
                 }
-                const data = await response.json();
-                setSchool(data.school);
             } catch (err) {
                 setError("Impossible de charger les informations de l'école");
             } finally {
@@ -71,7 +96,7 @@ export default function PublicSchoolPage() {
             }
         };
 
-        fetchSchool();
+        fetchData();
     }, [slug]);
 
     if (loading) {
@@ -164,50 +189,86 @@ export default function PublicSchoolPage() {
                             </Card>
                         )}
 
-                        {/* Pourquoi utiliser ScolPay */}
-                        <Card>
+                        {/* Tarifs */}
+                        {school.fees.length > 0 && (
+                            <Card id="tarifs">
+                                <CardContent className="p-6">
+                                    <h2 className="text-xl font-bold text-gray-800 mb-4">
+                                        Frais de Scolarité
+                                    </h2>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="border-b">
+                                                    <th className="py-2 font-semibold text-gray-700">Type de Frais</th>
+                                                    <th className="py-2 font-semibold text-gray-700">Classe</th>
+                                                    <th className="py-2 font-semibold text-gray-700 text-right">Montant</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {school.fees.map((fee) => (
+                                                    <tr key={fee.id} className="border-b last:border-0 hover:bg-gray-50">
+                                                        <td className="py-3 text-gray-800">{fee.name}</td>
+                                                        <td className="py-3 text-gray-600">{fee.class_name || "Toutes"}</td>
+                                                        <td className="py-3 text-right font-bold text-blue-600">
+                                                            {fee.amount.toLocaleString()} FCFA
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Annonces Publiques */}
+                        {announcements.length > 0 && (
+                            <Card id="annonces">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <Megaphone className="h-6 w-6 text-blue-600" />
+                                        <h2 className="text-xl font-bold text-gray-800">Actualités & Annonces</h2>
+                                    </div>
+                                    <div className="space-y-6">
+                                        {announcements.map((ann) => (
+                                            <div key={ann.id} className="border-b last:border-0 pb-6 last:pb-0">
+                                                <h3 className="font-bold text-lg text-gray-800 mb-2">{ann.title}</h3>
+                                                <p className="text-gray-600 whitespace-pre-wrap mb-4">{ann.content}</p>
+                                                <div className="flex flex-wrap items-center justify-between gap-4">
+                                                    <span className="text-sm text-gray-400">
+                                                        Publié le {new Date(ann.created_at).toLocaleDateString("fr-FR")}
+                                                    </span>
+                                                    {ann.attachment_url && (
+                                                        <a
+                                                            href={ann.attachment_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 transition-colors"
+                                                        >
+                                                            <FileText className="h-4 w-4" />
+                                                            <span>Consulter le document</span>
+                                                            <Download className="h-4 w-4" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Formulaire d'inscription */}
+                        <Card id="inscription">
                             <CardContent className="p-6">
-                                <h2 className="text-xl font-bold text-gray-800 mb-4">
-                                    Pourquoi payer via ScolPay ?
+                                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                                    Pré-inscription en ligne
                                 </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="flex items-start gap-3">
-                                        <Shield className="h-6 w-6 text-green-500 flex-shrink-0" />
-                                        <div>
-                                            <h3 className="font-semibold text-gray-800">Paiements sécurisés</h3>
-                                            <p className="text-sm text-gray-600">
-                                                Vos transactions sont protégées et cryptées
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <Clock className="h-6 w-6 text-blue-500 flex-shrink-0" />
-                                        <div>
-                                            <h3 className="font-semibold text-gray-800">Disponible 24h/24</h3>
-                                            <p className="text-sm text-gray-600">
-                                                Payez à tout moment, où que vous soyez
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <CheckCircle className="h-6 w-6 text-purple-500 flex-shrink-0" />
-                                        <div>
-                                            <h3 className="font-semibold text-gray-800">Reçus instantanés</h3>
-                                            <p className="text-sm text-gray-600">
-                                                Recevez une confirmation immédiate par SMS
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <Users className="h-6 w-6 text-orange-500 flex-shrink-0" />
-                                        <div>
-                                            <h3 className="font-semibold text-gray-800">Suivi en temps réel</h3>
-                                            <p className="text-sm text-gray-600">
-                                                Consultez l'historique de vos paiements
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                                <p className="text-gray-600 mb-6">
+                                    Remplissez ce formulaire pour manifester votre intérêt. L&apos;école vous recontactera rapidement.
+                                </p>
+                                <RegistrationForm schoolId={school.id} primaryColor={primaryColor} />
                             </CardContent>
                         </Card>
 
@@ -235,8 +296,8 @@ export default function PublicSchoolPage() {
                                                             <Star
                                                                 key={i}
                                                                 className={`h-4 w-4 ${i < review.rating
-                                                                        ? "text-yellow-400 fill-yellow-400"
-                                                                        : "text-gray-300"
+                                                                    ? "text-yellow-400 fill-yellow-400"
+                                                                    : "text-gray-300"
                                                                     }`}
                                                             />
                                                         ))}
@@ -385,5 +446,123 @@ export default function PublicSchoolPage() {
                 </div>
             </footer>
         </div>
+    );
+}
+
+function RegistrationForm({ schoolId, primaryColor }: { schoolId: string, primaryColor: string }) {
+    const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        parentPhone: "",
+        parentEmail: "",
+        className: ""
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus("submitting");
+        try {
+            const response = await fetch("/api/public/registration", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...formData, schoolId })
+            });
+
+            if (!response.ok) throw new Error();
+            setStatus("success");
+        } catch (_err) {
+            setStatus("error");
+        }
+    };
+
+    if (status === "success") {
+        return (
+            <div className="bg-green-50 p-6 rounded-lg text-center">
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-green-800 mb-2">Demande envoyée !</h3>
+                <p className="text-green-700">
+                    L&apos;établissement a bien reçu votre demande de pré-inscription. Ils vous contacteront prochainement.
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Prénom de l&apos;élève</label>
+                    <input
+                        required
+                        className="w-full px-3 py-2 border rounded-md focus:ring-2"
+                        style={{ outlineColor: primaryColor }}
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        placeholder="Jean"
+                    />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Nom de l&apos;élève</label>
+                    <input
+                        required
+                        className="w-full px-3 py-2 border rounded-md focus:ring-2"
+                        style={{ outlineColor: primaryColor }}
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        placeholder="DUBOIS"
+                    />
+                </div>
+            </div>
+            <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Classe souhaitée</label>
+                <input
+                    required
+                    className="w-full px-3 py-2 border rounded-md focus:ring-2"
+                    style={{ outlineColor: primaryColor }}
+                    value={formData.className}
+                    onChange={(e) => setFormData({ ...formData, className: e.target.value })}
+                    placeholder="Ex: CM2"
+                />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Téléphone du parent</label>
+                    <input
+                        required
+                        type="tel"
+                        className="w-full px-3 py-2 border rounded-md focus:ring-2"
+                        style={{ outlineColor: primaryColor }}
+                        value={formData.parentPhone}
+                        onChange={(e) => setFormData({ ...formData, parentPhone: e.target.value })}
+                        placeholder="97000000"
+                    />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">Email du parent (optionnel)</label>
+                    <input
+                        type="email"
+                        className="w-full px-3 py-2 border rounded-md focus:ring-2"
+                        style={{ outlineColor: primaryColor }}
+                        value={formData.parentEmail}
+                        onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
+                        placeholder="parent@example.com"
+                    />
+                </div>
+            </div>
+            <Button
+                type="submit"
+                disabled={status === "submitting"}
+                className="w-full py-6 text-lg font-bold text-white shadow-lg"
+                style={{ backgroundColor: primaryColor }}
+            >
+                {status === "submitting" ? "Envoi en cours..." : "Soumettre ma demande"}
+            </Button>
+            {status === "error" && (
+                <p className="text-red-500 text-sm text-center">
+                    Une erreur est survenue. Veuillez réessayer.
+                </p>
+            )}
+        </form>
     );
 }

@@ -4,11 +4,12 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
-import { CreditCard, Calendar, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { CreditCard, Calendar, CheckCircle2, AlertTriangle, Loader2, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function SubscriptionPage() {
     const { status, subscription } = useSubscription();
@@ -95,9 +96,16 @@ export default function SubscriptionPage() {
     return (
         <DashboardLayout role="school">
             <div className="space-y-8 max-w-4xl mx-auto">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 font-outfit">Mon Abonnement</h1>
-                    <p className="text-gray-500">Gérez votre licence ScolPay et vos accès.</p>
+                <div className="flex items-center gap-4">
+                    <Link href="/school">
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 font-outfit">Mon Abonnement</h1>
+                        <p className="text-gray-500">Gérez votre licence ScolPay et vos accès.</p>
+                    </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">

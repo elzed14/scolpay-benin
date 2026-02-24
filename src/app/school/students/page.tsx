@@ -5,11 +5,12 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, Upload, Trash2, Loader2, GraduationCap } from "lucide-react";
+import { Search, UserPlus, Upload, Trash2, Loader2, GraduationCap, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 import { useSubscription } from "@/hooks/useSubscription";
 import { AlertTriangle } from "lucide-react";
@@ -158,9 +159,16 @@ export default function StudentsPage() {
         <DashboardLayout role="school">
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold">Gestion des Élèves</h1>
-                        <p className="text-sm text-gray-500">Gérez la base de données des élèves de votre établissement.</p>
+                    <div className="flex items-center gap-4">
+                        <Link href="/school">
+                            <Button variant="ghost" size="icon">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-2xl font-bold">Gestion des Élèves</h1>
+                            <p className="text-sm text-gray-500">Gérez la base de données des élèves de votre établissement.</p>
+                        </div>
                     </div>
                     <div className="flex gap-2">
                         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>

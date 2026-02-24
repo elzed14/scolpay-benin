@@ -25,7 +25,8 @@ export async function GET() {
                 address,
                 phone,
                 email,
-                website
+                website,
+                is_public_visible
             `)
             .eq("owner_id", user.id)
             .single();
@@ -91,6 +92,7 @@ export async function PATCH(request: Request) {
                 logo_url: body.logo_url || null,
                 banner_url: body.banner_url || null,
                 website: body.website || null,
+                is_public_visible: body.is_public_visible ?? false,
                 updated_at: new Date().toISOString()
             })
             .eq("id", school.id);

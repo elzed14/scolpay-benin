@@ -3,10 +3,11 @@ import { NextResponse } from "next/server";
 
 export async function GET(
     request: Request,
-    { params }: { params: { className: string } }
+    { params }: { params: Promise<{ className: string }> }
 ) {
     try {
-        const className = decodeURIComponent(params.className);
+        const paramsResolved = await params;
+        const className = decodeURIComponent(paramsResolved.className);
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -56,10 +57,11 @@ export async function GET(
 
 export async function POST(
     request: Request,
-    { params }: { params: { className: string } }
+    { params }: { params: Promise<{ className: string }> }
 ) {
     try {
-        const className = decodeURIComponent(params.className);
+        const paramsResolved = await params;
+        const className = decodeURIComponent(paramsResolved.className);
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -117,9 +119,10 @@ export async function POST(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { className: string } }
+    { params }: { params: Promise<{ className: string }> }
 ) {
     try {
+        await params; // Await params even if not directly used to satisfy Next.js types
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 

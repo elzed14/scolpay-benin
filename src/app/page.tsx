@@ -1,10 +1,47 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Wallet, ShieldCheck, BarChart3 } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Wallet, ShieldCheck, BarChart3, Megaphone, Clock, ChevronRight, School } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
+
+interface NewsItem {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  schools: {
+    name: string;
+    slug: string;
+    logo_url: string | null;
+  };
+}
 
 export default function LandingPage() {
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loadingNews, setLoadingNews] = useState(true);
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const res = await fetch("/api/public/announcements/latest");
+        if (res.ok) {
+          const data = await res.json();
+          setNews(data.announcements || []);
+        }
+      } catch (error) {
+        console.error("Error loading news:", error);
+      } finally {
+        setLoadingNews(false);
+      }
+    };
+    fetchNews();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -68,6 +105,90 @@ export default function LandingPage() {
                 </CardHeader>
               </Card>
             </div>
+          </div>
+        </section>
+
+        {/* Latest News Feed */}
+        <section className="w-full py-12 md:py-24 bg-white border-t">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <Megaphone className="h-6 w-6 text-blue-600" />
+                </div>
+                <h2 className="text-3xl font-bold tracking-tighter">Actualités des Établissements</h2>
+              </div>
+              <Link href="/parent" className="text-blue-600 font-medium flex items-center hover:underline">
+                Voir toutes les écoles <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            </div>
+
+            {loadingNews ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="border border-gray-100 rounded-lg p-4 shadow-sm animate-pulse">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="h-8 w-8 rounded-full bg-gray-200" />
+                      <div className="h-3 w-24 bg-gray-200 rounded" />
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded mb-2" />
+                    <div className="h-4 w-3/4 bg-gray-200 rounded mb-4" />
+                    <div className="h-3 w-full bg-gray-100 rounded mb-1" />
+                    <div className="h-3 w-full bg-gray-100 rounded mb-1" />
+                    <div className="h-3 w-2/3 bg-gray-100 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : news.length === 0 ? (
+              <p className="text-center text-gray-400 py-8">
+                Aucune actualité publiée pour le moment.{" "}
+                <Link href="/school/register" className="text-blue-600 hover:underline">
+                  Inscrivez votre école
+                </Link>{" "}
+                pour commencer !
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {news.map((item) => (
+                  <Card key={item.id} className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col">
+                    <CardHeader className="p-4 pb-2">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden border border-blue-100">
+                          {item.schools.logo_url ? (
+                            <img src={item.schools.logo_url} alt={item.schools.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <School className="h-4 w-4 text-blue-400" />
+                          )}
+                        </div>
+                        <span className="text-xs font-semibold text-blue-600 truncate max-w-[150px]">
+                          {item.schools.name}
+                        </span>
+                      </div>
+                      <CardTitle className="text-base line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors h-10">
+                        {item.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 flex-1 flex flex-col">
+                      <p className="text-sm text-gray-500 line-clamp-3 mb-4 flex-1">
+                        {item.content}
+                      </p>
+                      <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-50">
+                        <div className="flex items-center text-[10px] text-gray-400">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}
+                        </div>
+                        <Link
+                          href={`/public/school/${item.schools.slug}#annonces`}
+                          className="text-[10px] font-bold text-gray-900 flex items-center group-hover:underline"
+                        >
+                          Lire plus <ChevronRight className="h-3 w-3 ml-0.5" />
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

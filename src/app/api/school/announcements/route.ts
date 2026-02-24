@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { title, content, attachment_url } = body;
+        const { title, content, attachment_url, is_public } = body;
 
         // Validation baisque
         if (!title || !content) {
@@ -66,14 +66,14 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "École non trouvée" }, { status: 404 });
         }
 
-        // Créer l'annonce
         const { data: announcement, error } = await supabase
             .from("announcements")
             .insert({
                 school_id: school.id,
                 title,
                 content,
-                attachment_url
+                attachment_url,
+                is_public: !!is_public
             })
             .select()
             .single();

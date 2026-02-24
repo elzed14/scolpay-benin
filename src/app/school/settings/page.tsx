@@ -5,9 +5,10 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, Wallet, Shield, Loader2 } from "lucide-react";
+import { Building2, Wallet, Shield, Loader2, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function SchoolSettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -75,9 +76,16 @@ export default function SchoolSettingsPage() {
     return (
         <DashboardLayout role="school">
             <div className="space-y-8 max-w-4xl">
-                <div>
-                    <h1 className="text-2xl font-bold">Paramètres de l&apos;Établissement</h1>
-                    <p className="text-sm text-gray-500">Gérez les informations de votre école et vos identifiants Mobile Money.</p>
+                <div className="flex items-center gap-4">
+                    <Link href="/school">
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold">Paramètres de l&apos;Établissement</h1>
+                        <p className="text-sm text-gray-500">Gérez les informations de votre école et vos identifiants Mobile Money.</p>
+                    </div>
                 </div>
 
                 <div className="grid gap-6">

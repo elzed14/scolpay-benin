@@ -5,9 +5,10 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Download, FileText, CheckCircle, Clock, Loader2, AlertTriangle, Filter } from "lucide-react";
+import { Search, Download, FileText, CheckCircle, Clock, Loader2, AlertTriangle, Filter, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import Link from "next/link";
 
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -21,7 +22,7 @@ interface Transaction {
     id: string;
     amount: number;
     status: string;
-    created_at: string;
+    payment_date: string;
     payment_method: string;
     payment_reference?: string;
     momo_reference?: string;
@@ -121,7 +122,7 @@ export default function TransactionsPage() {
                 id: tx.id,
                 amount: tx.amount,
                 status: tx.status,
-                created_at: tx.created_at,
+                payment_date: tx.payment_date,
                 payment_method: tx.payment_method,
                 payment_reference: tx.payment_reference,
                 momo_reference: tx.momo_reference,
@@ -230,12 +231,19 @@ export default function TransactionsPage() {
         <DashboardLayout role="school">
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold">Historique des Paiements</h1>
-                        <p className="text-sm text-gray-500">
-                            Consultez et gérez les transactions de l'établissement.
-                            <span className="text-blue-600 font-medium"> {pendingCount} en attente de validation.</span>
-                        </p>
+                    <div className="flex items-center gap-4">
+                        <Link href="/school">
+                            <Button variant="ghost" size="icon">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-2xl font-bold">Historique des Paiements</h1>
+                            <p className="text-sm text-gray-500">
+                                Consultez et gérez les transactions de l'établissement.
+                                <span className="text-blue-600 font-medium"> {pendingCount} en attente de validation.</span>
+                            </p>
+                        </div>
                     </div>
                     <div className="flex gap-2">
                         <Button
@@ -359,9 +367,9 @@ export default function TransactionsPage() {
                                     return (
                                         <TableRow key={tx.id} className={tx.momo_reference && tx.status === 'pending' ? 'bg-blue-50/50' : ''}>
                                             <TableCell className="text-sm">
-                                                {new Date(tx.created_at).toLocaleDateString("fr-FR")}
+                                                {new Date(tx.payment_date).toLocaleDateString("fr-FR")}
                                                 <div className="text-xs text-gray-400">
-                                                    {new Date(tx.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
+                                                    {new Date(tx.payment_date).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </TableCell>
                                             <TableCell>

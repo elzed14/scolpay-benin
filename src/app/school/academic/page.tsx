@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, Calendar as CalendarIcon, BookOpen, GraduationCap } from "lucide-react";
+import { Loader2, Plus, Calendar as CalendarIcon, BookOpen, GraduationCap, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
@@ -60,9 +60,16 @@ export default function AcademicPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-gray-800">Gestion Académique</h1>
-                <p className="text-gray-500">Configurez votre année scolaire, matières et examens.</p>
+            <div className="flex items-center gap-4">
+                <Link href="/school">
+                    <Button variant="ghost" size="icon">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Gestion Académique</h1>
+                    <p className="text-gray-500">Configurez votre année scolaire, matières et examens.</p>
+                </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">

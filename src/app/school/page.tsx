@@ -25,7 +25,7 @@ interface Transaction {
     id: string;
     amount: number;
     status: string;
-    created_at: string;
+    payment_date: string;
     students: Array<{
         first_name: string;
         last_name: string;
@@ -55,10 +55,22 @@ export default function SchoolDashboard() {
     const supabase = createClient();
 
     const fetchDashboardData = useCallback(async () => {
+        // Get current user's school
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: school } = await supabase
+            .from("schools")
+            .select("id")
+            .eq("owner_id", user.id)
+            .single();
+        if (!school) return;
+        const schoolId = school.id;
+
         // Fetch total students and fees
         const { data: studentsData } = await supabase
             .from("students")
-            .select("total_fee_due");
+            .select("total_fee_due")
+            .eq("school_id", schoolId);
 
         const totalRemainingDebt = studentsData?.reduce((acc, curr) => acc + (curr.total_fee_due || 0), 0) || 0;
         const studentCount = studentsData?.length || 0;
@@ -66,7 +78,8 @@ export default function SchoolDashboard() {
         // Fetch total completed transactions
         const { data: collectedData } = await supabase
             .from("transactions")
-            .select("amount, created_at")
+            .select("amount, payment_date")
+            .eq("school_id", schoolId)
             .eq("status", "completed");
 
         // Fetch today's transactions
@@ -75,13 +88,15 @@ export default function SchoolDashboard() {
         const { data: dailyData } = await supabase
             .from("transactions")
             .select("amount")
+            .eq("school_id", schoolId)
             .eq("status", "completed")
-            .gte("created_at", today.toISOString());
+            .gte("payment_date", today.toISOString());
 
         // Fetch pending transactions
         const { data: pendingData } = await supabase
             .from("transactions")
             .select("amount")
+            .eq("school_id", schoolId)
             .eq("status", "pending");
 
         const totalColl = collectedData?.reduce((acc, curr) => acc + curr.amount, 0) || 0;
@@ -117,7 +132,7 @@ export default function SchoolDashboard() {
         }
 
         collectedData?.forEach(tx => {
-            const d = new Date(tx.created_at);
+            const d = new Date(tx.payment_date);
             const month = d.getMonth();
             const year = d.getFullYear();
 
@@ -141,18 +156,39 @@ export default function SchoolDashboard() {
     }, [supabase]);
 
     const fetchRecentTransactions = useCallback(async () => {
-        const { data } = await supabase
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: school } = await supabase
+            .from("schools").select("id").eq("owner_id", user.id).single();
+        if (!school) return;
+
+        // Fetch transactions without students join (avoids RLS issues)
+        const { data: txData } = await supabase
             .from("transactions")
-            .select(`
-                id,
-                amount,
-                status,
-                created_at,
-                students(first_name, last_name)
-            `)
-            .order("created_at", { ascending: false })
+            .select("id, amount, status, payment_date, student_id")
+            .eq("school_id", school.id)
+            .order("payment_date", { ascending: false })
             .limit(5);
-        setRecentTransactions((data as Transaction[]) || []);
+
+        if (!txData || txData.length === 0) { setRecentTransactions([]); return; }
+
+        // Fetch student names separately
+        const studentIds = txData.map(tx => tx.student_id).filter(Boolean);
+        let studentsMap: Record<string, { first_name: string; last_name: string }> = {};
+        if (studentIds.length > 0) {
+            const { data: sData } = await supabase
+                .from("students")
+                .select("id, first_name, last_name")
+                .in("id", studentIds);
+            (sData || []).forEach(s => { studentsMap[s.id] = s; });
+        }
+
+        // Merge and set
+        const merged = txData.map(tx => ({
+            ...tx,
+            students: studentsMap[tx.student_id] || null
+        }));
+        setRecentTransactions(merged as Transaction[]);
     }, [supabase]);
 
     const fetchAllData = useCallback(async () => {
@@ -333,7 +369,7 @@ export default function SchoolDashboard() {
                                                     {getStudentName(tx)}
                                                 </p>
                                                 <p className="text-xs text-gray-500">
-                                                    {new Date(tx.created_at).toLocaleDateString("fr-FR", {
+                                                    {new Date(tx.payment_date).toLocaleDateString("fr-FR", {
                                                         day: "numeric",
                                                         month: "short",
                                                         hour: "2-digit",

@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Loader2, Megaphone, Bell } from "lucide-react";
+import { Loader2, Bell, FileText, Download } from "lucide-react";
 
 interface Announcement {
     id: string;
     title: string;
     content: string;
+    attachment_url?: string;
     created_at: string;
-    school_name?: string; // Optionnel si on récupère le nom de l'école
+    school_name?: string;
 }
 
 export default function ParentAnnouncementsPage() {
@@ -46,7 +48,7 @@ export default function ParentAnnouncementsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Actualités de l'école</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">Actualités de l&apos;école</h1>
                     <p className="text-gray-500">Restez informé des dernières nouvelles</p>
                 </div>
             </div>
@@ -62,7 +64,7 @@ export default function ParentAnnouncementsPage() {
                             <Bell className="h-8 w-8 text-blue-600" />
                         </div>
                         <h3 className="text-lg font-medium text-gray-900">Aucune annonce pour le moment</h3>
-                        <p className="text-gray-500 mt-1">Les informations de l'école apparaîtront ici.</p>
+                        <p className="text-gray-500 mt-1">Les informations de l&apos;école apparaîtront ici.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -77,8 +79,32 @@ export default function ParentAnnouncementsPage() {
                                     </span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="space-y-4">
                                 <p className="text-gray-600 whitespace-pre-wrap">{announcement.content}</p>
+
+                                {announcement.attachment_url && (
+                                    <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-dashed flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-100 rounded-lg">
+                                                <FileText className="h-5 w-5 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-700">Pièce jointe</p>
+                                                <p className="text-xs text-gray-500">Document ou image</p>
+                                            </div>
+                                        </div>
+                                        <a
+                                            href={announcement.attachment_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <Button variant="outline" size="sm" className="gap-2">
+                                                <Download className="h-4 w-4" />
+                                                Télécharger
+                                            </Button>
+                                        </a>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     ))}

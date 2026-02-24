@@ -5,10 +5,11 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Loader2, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Loader2, Pencil, Trash2, Check, X, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
 
 interface FeeConfig {
     id: string;
@@ -111,9 +112,16 @@ export default function FeesPage() {
         <DashboardLayout role="school">
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold">Configuration des Frais</h1>
-                        <p className="text-sm text-gray-500">Définissez les types de frais et les modalités de paiement.</p>
+                    <div className="flex items-center gap-4">
+                        <Link href="/school">
+                            <Button variant="ghost" size="icon">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-2xl font-bold">Configuration des Frais</h1>
+                            <p className="text-sm text-gray-500">Définissez les types de frais et les modalités de paiement.</p>
+                        </div>
                     </div>
                     <Button
                         className="bg-blue-600 gap-2"

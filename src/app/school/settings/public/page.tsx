@@ -21,6 +21,7 @@ interface SchoolData {
     phone: string | null;
     email: string | null;
     website: string | null;
+    is_public_visible: boolean;
 }
 
 export default function PublicPageSettings() {

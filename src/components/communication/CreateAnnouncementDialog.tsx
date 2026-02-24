@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 interface CreateAnnouncementDialogProps {
     onSuccess: () => void;
@@ -20,16 +21,42 @@ export default function CreateAnnouncementDialog({ onSuccess }: CreateAnnounceme
         title: "",
         content: ""
     });
+    const [isPublic, setIsPublic] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
+            let attachment_url = "";
+
+            if (file) {
+                setUploading(true);
+                const supabase = createClient();
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+                const filePath = `attachments/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('announcements')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('announcements')
+                    .getPublicUrl(filePath);
+
+                attachment_url = publicUrl;
+                setUploading(false);
+            }
+
             const response = await fetch("/api/school/announcements", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({ ...formData, attachment_url, is_public: isPublic })
             });
 
             const data = await response.json();
@@ -40,12 +67,16 @@ export default function CreateAnnouncementDialog({ onSuccess }: CreateAnnounceme
 
             toast.success("Annonce publiée avec succès !");
             setFormData({ title: "", content: "" });
+            setIsPublic(false);
+            setFile(null);
             setOpen(false);
             onSuccess();
-        } catch (error: any) {
-            toast.error(error.message);
+        } catch (err: unknown) {
+            const error = err as Error;
+            toast.error(error.message || "Une erreur est survenue");
         } finally {
             setLoading(false);
+            setUploading(false);
         }
     };
 
@@ -83,13 +114,51 @@ export default function CreateAnnouncementDialog({ onSuccess }: CreateAnnounceme
                             required
                         />
                     </div>
+                    <div className="flex items-center space-x-2 py-2">
+                        <input
+                            type="checkbox"
+                            id="is_public"
+                            checked={isPublic}
+                            onChange={(e) => setIsPublic(e.target.checked)}
+                            className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <Label htmlFor="is_public" className="cursor-pointer font-medium text-gray-700">
+                            Rendre cette annonce publique (visible sur la page de l&apos;école)
+                        </Label>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="file">Pièce jointe (Optionnel - PDF, Image...)</Label>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                id="file"
+                                type="file"
+                                onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+                                className="cursor-pointer"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            />
+                            {file && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setFile(null)}
+                                    className="text-red-500 hover:text-red-700"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                        {file && <p className="text-xs text-gray-500 italic">Fichier sélectionné: {file.name}</p>}
+                    </div>
+
                     <div className="flex justify-end gap-2 pt-2">
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                             Annuler
                         </Button>
-                        <Button type="submit" disabled={loading} className="bg-blue-600">
-                            {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Publier
+                        <Button type="submit" disabled={loading || uploading} className="bg-blue-600">
+                            {(loading || uploading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            {uploading ? "Envoi du fichier..." : "Publier"}
                         </Button>
                     </div>
                 </form>

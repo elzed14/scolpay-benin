@@ -30,6 +30,7 @@ interface SchoolData {
     phone: string | null;
     email: string | null;
     website: string | null;
+    is_public_visible: boolean;
 }
 
 interface PublicPagePreviewProps {
@@ -47,7 +48,8 @@ export default function PublicPagePreview({ school, onUpdate }: PublicPagePrevie
         secondary_color: school.secondary_color || "#3b82f6",
         logo_url: school.logo_url || "",
         banner_url: school.banner_url || "",
-        website: school.website || ""
+        website: school.website || "",
+        is_public_visible: school.is_public_visible || false
     });
 
     const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/public/school/${formData.slug}`;
@@ -166,6 +168,21 @@ export default function PublicPagePreview({ school, onUpdate }: PublicPagePrevie
                                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                                 placeholder="https://www.mon-ecole.com"
                             />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                        <div className="space-y-0.5">
+                            <Label className="text-blue-900">Rendre la page publique</Label>
+                            <p className="text-sm text-blue-700">
+                                Une fois activée, la page sera accessible par tout le monde.
+                            </p>
+                        </div>
+                        <div
+                            className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors ${formData.is_public_visible ? 'bg-blue-600' : 'bg-gray-300'}`}
+                            onClick={() => setFormData({ ...formData, is_public_visible: !formData.is_public_visible })}
+                        >
+                            <div className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform ${formData.is_public_visible ? 'translate-x-7' : ''}`} />
                         </div>
                     </div>
 

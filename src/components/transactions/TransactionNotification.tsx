@@ -69,30 +69,55 @@ export default function TransactionNotification() {
 
             if (!school) return;
 
-            // Fetch pending transactions
-            const { data, error } = await supabase
+            // Fetch pending transactions (without join to avoid issues)
+            const { data, error: txError } = await supabase
                 .from("transactions")
-                .select(`
-                    id,
-                    amount,
-                    created_at,
-                    momo_reference,
-                    students (
-                        first_name,
-                        last_name,
-                        matricule
-                    )
-                `)
+                .select("*")
                 .eq("school_id", school.id)
                 .eq("status", "pending")
                 .limit(5);
 
-            if (error) throw error;
+            if (txError) {
+                console.error("Error fetching transactions:", txError.message, txError);
+                throw txError;
+            }
 
-            setPendingTransactions(data || []);
-            setShowNotification((data || []).length > 0);
-        } catch (error) {
-            console.error("Error fetching pending transactions:", error);
+            if (!data || data.length === 0) {
+                setPendingTransactions([]);
+                setShowNotification(false);
+                return;
+            }
+
+            // Fetch student info for these transactions
+            const studentIds = data.map(tx => tx.student_id).filter(Boolean);
+
+            let studentData: any[] = [];
+            if (studentIds.length > 0) {
+                const { data: sData, error: sError } = await supabase
+                    .from("students")
+                    .select("id, first_name, last_name, matricule")
+                    .in("id", studentIds);
+
+                if (sError) {
+                    console.error("Error fetching students for transactions:", sError.message);
+                } else {
+                    studentData = sData || [];
+                }
+            }
+
+            // Combine data
+            const transactionsWithStudents = data.map(tx => {
+                const student = studentData.find(s => s.id === tx.student_id);
+                return {
+                    ...tx,
+                    students: student ? [student] : []
+                };
+            });
+
+            setPendingTransactions(transactionsWithStudents);
+            setShowNotification(transactionsWithStudents.length > 0);
+        } catch (error: any) {
+            console.error("Error fetching pending transactions:", error?.message || error);
         } finally {
             setLoading(false);
         }
